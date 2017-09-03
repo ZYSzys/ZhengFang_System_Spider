@@ -48,6 +48,22 @@ def Getgrade(response):
 
 	return Grades
 
+def Getgradetestresults(trs):
+	results = []
+	k = []
+	for td in trs[0].xpath('.//td/text()'):
+		k.append(td)
+		
+	trs = trs[1:]
+	for tr in trs:
+		tds = tr.xpath('.//td/text()')
+		v = []
+		for td in tds:
+			v.append(td)
+		one = dict((i, j) for i, j in zip(k, v))
+		results.append(one)
+	return results
+
 class University:
 	def __init__(self, student, baseurl):
 		reload(sys)
@@ -121,7 +137,7 @@ class University:
 					continue
 
 		f.close()
-		print 'Load class succeed!'
+		print 'Download class succeed!'
 	
 	def GetGrade(self):
 		self.session.headers['Referer'] = self.baseurl + '/xs_main.aspx?xh=' + self.student.user
@@ -161,10 +177,32 @@ class University:
 
 		f.write('\n\n\n'+u'平均绩点: '+'%.2f\t\t\t' % (totup / totdown) + u'总学分绩点: '+'%.2f\t\t\t' % totup + u'总学分: '+'%.2f\n' % totdown)
 		f.close()
-		print 'Load grade succeed!'
+		print 'Download grade succeed!'
+
+	def GradeTestResults(self):
+		self.session.headers['Referer'] = self.baseurl + '/xs_main.aspx?xh=' + self.student.user
+		gtrurl = self.baseurl + '/xsdjkscx.aspx?xh='+self.student.user+'&xm='+self.student.urlname+'&gnmkdm=N121606'
+		gtrresponse = self.session.get(gtrurl)
+		gtrcontent = gtrresponse.text
+		gtrhtml = etree.HTML(gtrcontent)
+		trs = gtrhtml.xpath('//table[@class="datelist"]/tr')
+
+		f = open(os.getcwd()+'/zhengfang.txt', 'a+')
+		f.write('\n\n\n'+u'等级考试成绩'+'\n')
+
+		results = Getgradetestresults(trs)
+		for one in results[0]:
+			f.write('%-10s\t' % one)
+		f.write('\n')
+		for each in results:
+			for one in each:
+				f.write('%-10s\t' % each[one])
+			f.write('\n')
+		f.close()
+		print 'Download grade test results succeed!'
 
 if __name__ == "__main__":
-	url = raw_input("学校教务网站：(如http://115.236.84.162)")
+	url = raw_input("学校教务网站(如http://115.236.84.162)：")
 	user = raw_input("学号：")
 	pswd = raw_input("密码：")
 	who = Who(user, pswd)
@@ -172,3 +210,4 @@ if __name__ == "__main__":
 	if univ.Login():
 		univ.GetClass()
 		univ.GetGrade()
+		univ.GradeTestResults()
