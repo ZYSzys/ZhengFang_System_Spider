@@ -34,18 +34,21 @@ class Tool:
 def Getgrade(response):
 	html = response.content.decode("gb2312")
 	soup = BeautifulSoup(html.decode('utf-8'))
-	trs = soup.find(id="Datagrid1").findAll("tr")[1:]
+	trs = soup.find(id="Datagrid1").findAll("tr")
 	Grades = []
-	for tr in trs:
+	keys = []
+	tds = trs[0].findAll("td")
+	tds = tds[:2] + tds[3:5] + tds[6:9]
+	for td in tds:
+		keys.append(td.string)
+	for tr in trs[1:]:
 		tds = tr.findAll("td")
 		tds = tds[:2] + tds[3:5] + tds[6:9]
-		keys = ["year", "term", "name", "type", "credit", "gradePoint", "grade"]
 		values = []
 		for td in tds:
 			values.append(td.string)
 		one = dict((key, value) for key, value in zip(keys, values))
 		Grades.append(one)
-
 	return Grades
 
 def Getgradetestresults(trs):
@@ -53,7 +56,6 @@ def Getgradetestresults(trs):
 	k = []
 	for td in trs[0].xpath('.//td/text()'):
 		k.append(td)
-		
 	trs = trs[1:]
 	for tr in trs:
 		tds = tr.xpath('.//td/text()')
@@ -88,7 +90,6 @@ class University:
 		jpg.show()
 		jpg.close
 		code = raw_input('输入验证码：')
-
 		RadioButtonList1 = u"学生".encode('gb2312', 'replace')
 		data = {
 			"__VIEWSTATE": __VIEWSTATE,
@@ -135,22 +136,17 @@ class University:
  						cnt += 1
 				else:
 					continue
-
 		f.close()
 		print 'Download class succeed!'
 	
 	def GetGrade(self):
 		self.session.headers['Referer'] = self.baseurl + '/xs_main.aspx?xh=' + self.student.user
 		gradeurl = self.baseurl + '/xscjcx.aspx?xh='+self.student.user+'&xm='+self.student.urlname+'&gnmkdm=N121605'
-		
 		graderesponse = self.session.get(gradeurl)
-		
 		gradecont = graderesponse.content.decode("gb2312")
 		soup = BeautifulSoup(gradecont.decode("utf-8"))
 		__VIEWSTATE = soup.findAll(name="input")[2]["value"]
-
 		self.session.headers['Referer'] = gradeurl
-		
 		data = {
 			"__EVENTTARGET":"",
 			"__EVENTARGUMENT":"",
@@ -163,18 +159,19 @@ class University:
 		}
 		grares = self.session.post(gradeurl, data=data)
 		grades = Getgrade(grares)
-
 		totup = 0
 		totdown = 0
 		f = open(os.getcwd()+'/zhengfang.txt', 'a+')
-		f.write('\n\n\n'+u'历年成绩:'+'\n')		
+		f.write('\n\n\n'+u'历年成绩:'+'\n')
+		for i in grades[0]:
+			f.write('%-13s\t' % i)
+		f.write('\n')
 		for each in grades:
 			for one in each:
 				f.write('%-15s\t' % each[one])
 			f.write('\n')
-			totup = totup + float(each['gradePoint']) * float(each['credit'])
-			totdown = totdown + float(each['credit'])
-
+			totup = totup + float(each[u'绩点']) * float(each[u'学分'])
+			totdown = totdown + float(each[u'学分'])	
 		f.write('\n'+u'平均绩点: '+'%.2f\t\t\t' % (totup / totdown) + u'总学分绩点: '+'%.2f\t\t\t' % totup + u'总学分: '+'%.2f\n' % totdown)
 		f.close()
 		print 'Download grade succeed!'
@@ -186,10 +183,8 @@ class University:
 		gtrcontent = gtrresponse.text
 		gtrhtml = etree.HTML(gtrcontent)
 		trs = gtrhtml.xpath('//table[@class="datelist"]/tr')
-
 		f = open(os.getcwd()+'/zhengfang.txt', 'a+')
 		f.write('\n\n\n'+u'等级考试成绩:'+'\n')
-
 		results = Getgradetestresults(trs)
 		for one in results[0]:
 			f.write('%-10s\t' % one)
