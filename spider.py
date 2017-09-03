@@ -136,6 +136,7 @@ class University:
  						cnt += 1
 				else:
 					continue
+			f.write('\n')
 		f.close()
 		print 'Download class succeed!'
 	
