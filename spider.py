@@ -175,7 +175,7 @@ class University:
 			totup = totup + float(each['gradePoint']) * float(each['credit'])
 			totdown = totdown + float(each['credit'])
 
-		f.write('\n\n\n'+u'平均绩点: '+'%.2f\t\t\t' % (totup / totdown) + u'总学分绩点: '+'%.2f\t\t\t' % totup + u'总学分: '+'%.2f\n' % totdown)
+		f.write('\n'+u'平均绩点: '+'%.2f\t\t\t' % (totup / totdown) + u'总学分绩点: '+'%.2f\t\t\t' % totup + u'总学分: '+'%.2f\n' % totdown)
 		f.close()
 		print 'Download grade succeed!'
 
@@ -188,7 +188,7 @@ class University:
 		trs = gtrhtml.xpath('//table[@class="datelist"]/tr')
 
 		f = open(os.getcwd()+'/zhengfang.txt', 'a+')
-		f.write('\n\n\n'+u'等级考试成绩'+'\n')
+		f.write('\n\n\n'+u'等级考试成绩:'+'\n')
 
 		results = Getgradetestresults(trs)
 		for one in results[0]:
