@@ -105,8 +105,12 @@ class University:
 		logcont = loginres.text
 		pattern = re.compile('<form name="Form1".*?action=(.*?) id="Form1">', re.S)
 		res = re.findall(pattern, logcont)
-		if res[0][17:29] == self.student.user:
-			print 'Login succeed!'
+		try:
+			if res[0][17:29] == self.student.user:
+				print 'Login succeed!'
+		except:
+			print 'Login failed! Maybe Wrong password ! ! !'
+			return
 		pattern = re.compile('<span id="xhxm">(.*?)</span>')
 		xhxm = re.findall(pattern, logcont)
 		name = xhxm[0][:3]
