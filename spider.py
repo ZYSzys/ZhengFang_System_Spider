@@ -121,7 +121,7 @@ class University:
             return
         pattern = re.compile('<span id="xhxm">(.*?)</span>')
         xhxm = re.findall(pattern, logcont)
-        name = xhxm[0][:3]
+        name = xhxm[0].replace('同学', '')
         self.student.urlname = urllib.parse.quote_plus(str(name))
         return True
 
